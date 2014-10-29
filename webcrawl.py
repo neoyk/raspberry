@@ -9,6 +9,7 @@ dirname, _ = os.path.split(os.path.abspath(sys.argv[0]))
 geo = maxminddb.Reader(dirname+'/../topology/GeoLite2-City.mmdb')
 
 def aspath(ip,version=4):
+    return 'N/A'
     if(version==6):
         cmd='expect '+dirname+'/quagga-com 115.25.86.11 bgpd "sh ipv6 bgp '+ip+'"'
     else:

@@ -5,6 +5,7 @@ import os, time, glob, sys, subprocess, shlex, logging
 import MySQLdb, dns.resolver, maxminddb
 from webcrawl import *
 from collections import defaultdict
+from random import shuffle
 
 version = 4
 if 0==connect_detection(version):
@@ -26,11 +27,10 @@ starter = "Main thread started @ "+strtime+'\n'
 stime = time.time()
 pm2=MySQLdb.connect(host='127.0.0.1',user='root',db='raspberry')
 cur2=pm2.cursor()
-nthreads = 4 # #of threads for slow websites
-idlist2 = [[] for i in range(nthreads)]
 
 cur2.execute("select id from ipv"+str(version)+"server ")
 idlist1 = [ i[0] for i in cur2.fetchall()]
+shuffle(idlist1)
 
 fast = webperf(idlist1, version, nameprefix+'MB', verbose)
 fast.start()
