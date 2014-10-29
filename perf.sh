@@ -1,6 +1,5 @@
 sleep $(($RANDOM%300))
 cd /root/mnt
-exit
 num=$(($((0x`md5sum code |cut -d' ' -f1`))%24))
 if [ $num -eq `date +%H` ];
 then
