@@ -4,6 +4,7 @@
 
 import socket, time, sys, MySQLdb, os, urllib, urllib2, logging, logging.handlers
 from collections import defaultdict
+from webcrawl import *
 dirname, filename = os.path.split(os.path.abspath(sys.argv[0]))
 #TODO check data integrity before uploading
 start = {}
@@ -15,10 +16,14 @@ except:
     exit(1)
 values = {'code':code}
 
+if 0==connect_detection(6):
+    domain = '115.25.86.4'
+else:
+    domain = 'perf.sasm3.net'
 pm1=MySQLdb.connect(host='localhost',user='root',db='raspberry')
 cur1=pm1.cursor()
 
-url = 'http://perf.sasm3.net/raspberry/time.php?code='+code
+url = 'http://'+domain+'/raspberry/time.php?code='+code
 req = urllib2.Request(url)
 response = urllib2.urlopen(req)
 output = response.read()
@@ -38,7 +43,7 @@ if noin == 0 :
     print 0,0
 else:
     values['data'] = '||||'.join(data)
-    url = 'http://perf.sasm3.net/raspberry/receive.php'
+    url = 'http://'+domain+'/raspberry/receive.php'
     para = urllib.urlencode(values)
     req = urllib2.Request(url, para)
     response = urllib2.urlopen(req)

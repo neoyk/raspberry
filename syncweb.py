@@ -37,6 +37,7 @@ for line in output.split('\n'):
             subprocess.Popen(shlex.split(line[7:]), stdout=subprocess.PIPE,stderr = subprocess.PIPE )
         except:
             continue
-    cur1.execute(line)
+    else:
+        cur1.execute(line)
 cur1.close()
 pm1.close()

@@ -9,12 +9,15 @@ def downloader(domain,directory,pattern, version = 4):
     #conn = httplib.HTTPConnection(domain)
     #conn.request("GET", directory ,_, headers)
     #response = conn.getresponse()
-    response = urllib2.urlopen('http://'+domain+directory)
-    data = response.read()
-    #conn.close()
-    m = re.search(pattern,data)
-    if m:
-        return True,m.group(1),ip2asn(m.group(1), version)
+    try:
+        response = urllib2.urlopen('http://'+domain+directory)
+        data = response.read()
+        #conn.close()
+        m = re.search(pattern,data)
+        if m:
+            return True,m.group(1),ip2asn(m.group(1), version)
+    except:
+        pass
     if version==4:
         return False,'0.0.0.0','NO RECORD'
     else:
