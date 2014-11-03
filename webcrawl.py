@@ -333,8 +333,8 @@ class webperf(threading.Thread):
                         curdata = 0
                 else:
                     nopacket = 0
-                if(losspacket!=0):
-                    lossinterval += 1
+                if(losspacket>0):
+                    lossinterval += losspacket
                     if(burstdetect(packetcount, losspacket)==1):
                         serverslow = -1
                         self.logger.warning("Bursty loss detected")
