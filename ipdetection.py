@@ -108,7 +108,12 @@ try:
 except:
     print 'Failed to open code file'
     exit(1)
-url = 'http://115.25.86.4/raspberry/rasp_address.php'
+if ipv6=='::':
+    domain = '115.25.86.4'
+else:
+    domain = 'perf.sasm3.net'
+
+url = 'http://'+domain+'/raspberry/rasp_address.php'
 values = {'code':code}
 
 pm1=MySQLdb.connect(host='localhost',user='root',db='raspberry',charset='utf8')

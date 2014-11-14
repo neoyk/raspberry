@@ -3,6 +3,7 @@
 
 import sys, subprocess, shlex, MySQLdb, os, urllib, urllib2, logging, logging.handlers
 from collections import defaultdict
+from webcrawl import connect_detection
 dirname, filename = os.path.split(os.path.abspath(sys.argv[0]))
 pm1=MySQLdb.connect(host='localhost',user='root',db='raspberry')
 cur1=pm1.cursor()
@@ -16,9 +17,13 @@ for v in ['4','6']:
 #for entry in data:
 #    print entry
 noin = len(data)
+if 0==connect_detection(6):
+    domain = '115.25.86.4'
+else:
+    domain = 'perf.sasm3.net'
 if noin :
     values= {'data' : '||||'.join(data) }
-    url = 'http://perf.sasm3.net/raspberry/meta_receive.php'
+    url = 'http://'+domain+'/raspberry/meta_receive.php'
     para = urllib.urlencode(values)
     req = urllib2.Request(url, para)
     response = urllib2.urlopen(req)
@@ -26,7 +31,7 @@ if noin :
     print "Meta uploaded:", noin, output
     response.close()
 #step2 reset website list
-url = 'http://perf.sasm3.net/raspberry/bootstrap.php'
+url = 'http://'+domain+'/raspberry/bootstrap.php'
 req = urllib2.Request(url)
 response = urllib2.urlopen(req)
 output = response.read()

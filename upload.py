@@ -4,7 +4,7 @@
 
 import socket, time, sys, MySQLdb, os, urllib, urllib2, logging, logging.handlers
 from collections import defaultdict
-from webcrawl import *
+from webcrawl import connect_detection
 dirname, filename = os.path.split(os.path.abspath(sys.argv[0]))
 #TODO check data integrity before uploading
 start = {}

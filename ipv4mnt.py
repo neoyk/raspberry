@@ -31,7 +31,6 @@ cur2=pm2.cursor()
 cur2.execute("select id from ipv"+str(version)+"server ")
 idlist1 = [ i[0] for i in cur2.fetchall()]
 shuffle(idlist1)
-
 fast = webperf(idlist1, version, nameprefix+'MB', verbose)
 fast.start()
 fast.join()

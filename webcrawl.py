@@ -223,7 +223,7 @@ class webperf(threading.Thread):
             ip = '::'
         else:
             ip = '0.0.0.0'
-        self.cur1.execute("insert into web_perf"+str(self.version)+" values(%s, %s, 'AS0', %s, now(), 0, 0, 0, 0, 0, %s)",(webid, ip, webdomain, self.wtype))
+        self.cur1.execute("insert into web_perf"+str(self.version)+" values(%s, %s, 'AS0', %s, now(), 0, 0, 0, -1, -1, 0, %s)",(webid, ip, webdomain, self.wtype))
         self.cur1.execute("update ipv"+str(self.version)+"server set error=error-1,performance='N/A' where id = %s",( webid, ))
 
     def ipchange(self,webid,ip,asn):
@@ -301,9 +301,11 @@ class webperf(threading.Thread):
         curdata = 0 # the current data block
         totaldata = 0
         lossrate = -1
+        actual_loss = -1
         serverslow = 0 # 1: slow, 0 not slow, -1 bursty loss detected -> server fast enough and pagesize large enough
         if(interval and len(m)):
             lossinterval = 0
+            losscount = 0
             lossbeforedull = 0 #boolean
             totalpacket = 0
             nopacket = 0 # # of consective intervals without any data 
@@ -334,7 +336,8 @@ class webperf(threading.Thread):
                 else:
                     nopacket = 0
                 if(losspacket>0):
-                    lossinterval += losspacket
+                    lossinterval += 1
+                    losscount += losspacket
                     if(burstdetect(packetcount, losspacket)==1):
                         serverslow = -1
                         self.logger.warning("Bursty loss detected")
@@ -347,20 +350,21 @@ class webperf(threading.Thread):
             if(curdata>maxdata):
                 maxdata = curdata
             if(totalpacket):
+                actual_loss = 100.0*losscount/totalpacket
                 lossrate = 100.0*lossinterval/totalpacket
             totaldata = totaldata *1460 / 1514.0 # payload / packet length
             self.logger.info("interval,totalpacket,totaldata,maxbw,maxdata,lossrate,serverslow:")
             self.logger.info( "{0} {1} {2} {3} {4} {5} {6}".format(interval,totalpacket,totaldata,maxbw,maxdata,lossrate,serverslow) )
-        return (totaldata, maxdata, maxbw, serverslow, lossrate)
+        return (totaldata, maxdata, maxbw, serverslow, lossrate, actual_loss)
 
-    def perfsuccess(self, webid, webdomain, ip, asn, pagesize, oldpagesize, bandwidth, maxbw, latency, lossrate, serverslow):
+    def perfsuccess(self, webid, webdomain, ip, asn, pagesize, oldpagesize, bandwidth, maxbw, latency, lossrate, actual_loss, serverslow):
         peak = bwftop(maxbw)
         avgbw = bwftop(bandwidth)
         perf = "Page size: "+locale.format("%d",pagesize, grouping=True)+"B, BTC: "+avgbw+'(peak:'+peak+"), RTT: "+str(latency)+"ms, lossrate: "+str(round(lossrate,2))+" % @ "+time.strftime("%Y-%m-%d %H:%M:%S")
         self.cur1.execute("update ipv"+str(self.version)+"server set performance=%s, bandwidth=%s where id = %s",(perf, maxbw, webid))
         if(pagesize>1.5*oldpagesize or pagesize*1.5<oldpagesize):
             self.cur1.execute("update ipv"+str(self.version)+"server set pagesize=%s where id = %s",(pagesize, webid))
-        self.cur1.execute("insert into web_perf"+str(self.version)+" values(%s, %s, %s, %s, now(), %s, %s, %s, %s, %s, %s)",(webid, ip, asn, webdomain, bandwidth, pagesize, latency, lossrate, maxbw, self.wtype))
+        self.cur1.execute("insert into web_perf"+str(self.version)+" values(%s, %s, %s, %s, now(), %s, %s, %s, %s, %s, %s, %s)",(webid, ip, asn, webdomain, bandwidth, pagesize, latency, lossrate, actual_loss, maxbw, self.wtype))
         if(bandwidth>2500000 or maxbw>2500000): # Bps to bps to mbps
             bwlevel = 20
         else:
@@ -514,19 +518,18 @@ class webperf(threading.Thread):
                 else:
                 #def tsharkparse(self,packets,latency,ip, pagesize):
                 #return (totaldata, maxdata, maxbw, serverslow, lossrate)
-                    _, maxdata, maxbw, serverslow, lossrate = self.tsharkparse(packets, latency, ip)
+                    _, maxdata, maxbw, serverslow, lossrate, actual_loss = self.tsharkparse(packets, latency, ip)
                     if(maxdata<3*pagesize/4 and serverslow>0):
                         self.logger.warning( "slow server detected")
                         # no traffic during more than three intervals and maxbw < 2.5MBps
                         # indicates this website is too slow for link performance estimation
                         self.cur1.execute("update ipv"+str(self.version)+"server set slow=slow-1 where id = %s",( webid, ))
 
-                    #def perfsuccess(self, cur, webid, webdomain, ip, asn, pagesize, oldpagesize, bandwidth, maxbw, latency, lossrate):
-                    self.perfsuccess( webid, webdomain, ip, asn, pagesize, result[3], bandwidth, maxbw, latency, lossrate, serverslow)
+                    self.perfsuccess( webid, webdomain, ip, asn, pagesize, result[3], bandwidth, maxbw, latency, lossrate, actual_loss, serverslow)
                 
                 self.logger.info( "Finish successfully: %s\n"%(result,))
             elif(killed and success):
-                totaldata, maxdata, maxbw, serverslow, lossrate = self.tsharkparse(packets, latency, ip)
+                totaldata, maxdata, maxbw, serverslow, lossrate, actual_loss = self.tsharkparse(packets, latency, ip)
                 self.logger.info( "webid, ip, asn, webdomain, totaldata, maxbw, maxdata, latency:")
                 self.logger.info( "%s"%((webid, ip, asn, webdomain, totaldata, maxbw, maxdata, latency), ))
                 if(maxdata<3*totaldata/4 and serverslow>0):
@@ -535,7 +538,7 @@ class webperf(threading.Thread):
                     # indicates this website is too slow for link performance estimation
                     self.cur1.execute("update ipv"+str(self.version)+"server set slow=slow-1 where id = %s",( webid, ))
                 bandwidth = maxbw
-                self.perfsuccess( webid, webdomain, ip, asn, totaldata, result[3], bandwidth, maxbw, latency, lossrate, serverslow)
+                self.perfsuccess( webid, webdomain, ip, asn, totaldata, result[3], bandwidth, maxbw, latency, lossrate, actual_loss, serverslow)
             elif(log.count("HTTP request sent, awaiting response... 4")):
                 # 404 not found, 403 forbidden, 400 bad request
                 bandwidth = 0
@@ -543,7 +546,7 @@ class webperf(threading.Thread):
                 lossrate = -1
                 maxbw = 0
                 self.logger.info( "Finish 4xx error: %s"%( (webid, ip, asn, webdomain, bandwidth, pagesize, latency, lossrate, success),) )
-                self.cur1.execute("insert into web_perf"+str(self.version)+" values(%s, %s, %s, %s, now(), %s, %s, %s, %s, %s, %s)",(webid, ip, asn, webdomain, bandwidth,pagesize, latency, lossrate, maxbw, self.wtype))
+                self.cur1.execute("insert into web_perf"+str(self.version)+" values(%s, %s, %s, %s, now(), %s, %s, %s, %s, %s, %s, %s)",(webid, ip, asn, webdomain, bandwidth,pagesize, latency, lossrate, lossrate, maxbw, self.wtype))
                 self.cur1.execute("update ipv"+str(self.version)+"server set crawl=crawl-1 where id = %s",( webid, ))
             else:
                 # connection timed out, 5xx server error
