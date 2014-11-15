@@ -1,10 +1,18 @@
 #! /usr/bin/python
-# wget --delete-after --header="Host:20140507.ip138.com" 112.84.191.168/ic.asp
+# wget --delete-after --header="Host:1111.ip138.com" 112.84.191.168/ic.asp
 
-import os,sys,string,re, httplib, urllib2, collections, shlex, MySQLdb, urllib, urllib2, uuid
+import os,sys,string,re, httplib,  collections, shlex, MySQLdb, urllib, urllib2, uuid, time
 from webcrawl import *
 user_agent = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.89 Safari/537.1'
 headers = { 'User-agent':user_agent, "Accept": "text/plain" }
+if 0==connect_detection(6):
+    domain = '115.25.86.4'
+else:
+    domain = 'perf.sasm3.net'
+
+if len(sys.argv)>1:
+    idle = int(sys.argv[1])
+    time.sleep(idle)
 def downloader(domain,directory,pattern, version = 4):
     #conn = httplib.HTTPConnection(domain)
     #conn.request("GET", directory ,_, headers)
@@ -24,7 +32,7 @@ def downloader(domain,directory,pattern, version = 4):
         return False,'::','NO RECORD'
 
 def ip138(web,headers):
-    cmd = 'wget --header="'+headers+'" -o /dev/null -O - http://'+web+'/ic.asp'
+    cmd = 'wget -T 5 -t 2 --header="'+headers+'" -o /dev/null -O - http://'+web+'/ic.asp'
     #print cmd
     proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr = subprocess.PIPE)
     proc.wait()
@@ -45,7 +53,7 @@ def ip138(web,headers):
         return '0.0.0.0'
 def refresh():
     global weblist_138,headers_138
-    url = 'http://perf.sasm3.net/raspberry/ipresolver.php'
+    url = 'http://'+domain+'/raspberry/ipresolver.php'
     try:
         response = urllib2.urlopen(url)
         content = response.read()
@@ -74,11 +82,11 @@ if (mac_int>>40)%2:
 else:
     mac = '{0:012x}'.format(mac_int)
 
-weblist_138 = {'CU':'112.84.191.168','CM':'183.238.101.232', 'CT':'219.153.49.149'}
-headers_138 =  'Host:20140507.ip138.com' 
+weblist_138 = {'CU':'112.84.191.168','CM':'183.238.101.232', 'CT':'117.25.157.119'}
+headers_138 =  'Host:1111.ip138.com' 
 #headers_138 =  'H' 
 
-#print downloader('20140507.ip138.com','/ic.asp','<center>.*\[(.*)\].*</center>')
+#print downloader('1111.ip138.com','/ic.asp','<center>.*\[(.*)\].*</center>')
 _,ip['CERNET'],asn['CERNET'] = downloader('115.25.86.4','/clientip.php','(.*)')
 _,ipv6,asn6 = downloader('[2001:da8:243:8601::864]','/clientip.php','(.*)', 6)
 _,ip['Int1'],asn['Int1'] = downloader('checkmyip.com','/','Your IP Address is:.*>(\d.*\d)</span')
@@ -108,10 +116,6 @@ try:
 except:
     print 'Failed to open code file'
     exit(1)
-if ipv6=='::':
-    domain = '115.25.86.4'
-else:
-    domain = 'perf.sasm3.net'
 
 url = 'http://'+domain+'/raspberry/rasp_address.php'
 values = {'code':code}

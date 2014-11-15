@@ -2,11 +2,14 @@
 # -*- coding: utf-8 -*-
 # upload performance data to central server search.sasm3.net
 
-import sys, os, urllib, urllib2, uuid
+import sys, os, urllib, urllib2, uuid, time
 from collections import defaultdict
 from webcrawl import connect_detection
 dirname, filename = os.path.split(os.path.abspath(sys.argv[0]))
 #TODO check data integrity before uploading
+if len(sys.argv)>1:
+    idle = int(sys.argv[1])
+    time.sleep(idle)
 start = {}
 try:
     with open(dirname+'/code') as fh:
