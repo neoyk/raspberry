@@ -11,7 +11,7 @@ else:
     domain = 'perf.sasm3.net'
 
 if len(sys.argv)>1:
-    idle = int(sys.argv[1])
+    idle = int(sys.argv[1]) + 30
     time.sleep(idle)
 def downloader(domain,directory,pattern, version = 4):
     #conn = httplib.HTTPConnection(domain)
@@ -76,11 +76,7 @@ def refresh():
 dirname, _ = os.path.split(os.path.abspath(sys.argv[0]))
 ip = collections.defaultdict(str)
 asn = collections.defaultdict(str)
-mac_int = uuid.getnode()
-if (mac_int>>40)%2:
-    mac = 'NA'
-else:
-    mac = '{0:012x}'.format(mac_int)
+mac = mac_addr()
 
 weblist_138 = {'CU':'112.84.191.168','CM':'183.238.101.232', 'CT':'117.25.157.119'}
 headers_138 =  'Host:1111.ip138.com' 
@@ -107,18 +103,11 @@ except:
                 asn[key] = ip2asn(ip[key])
             except:
                 continue
-ip4str = '||'.join([i+':'+ip[i] for i in sorted(ip.keys())])
-asn4str = '||'.join([i+':'+asn[i] for i in sorted(asn.keys())])
-try:
-    with open(dirname+'/code') as fh:
-        code = fh.readline().rstrip()
-        #print code
-except:
-    print 'Failed to open code file'
-    exit(1)
+ip4str = '+'.join([i+':'+ip[i] for i in sorted(ip.keys())])
+asn4str = '+'.join([i+':'+asn[i] for i in sorted(asn.keys())])
 
 url = 'http://'+domain+'/raspberry/rasp_address.php'
-values = {'code':code}
+values = {}
 
 pm1=MySQLdb.connect(host='localhost',user='root',db='raspberry',charset='utf8')
 cur1 = pm1.cursor()

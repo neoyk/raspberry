@@ -44,23 +44,23 @@ for fname in filelist:
         logger.info( fh.read() )
     os.remove(fname)
 
-try:
-    with open(dirname+'/code') as fh:
-        code = fh.readline().rstrip()
-        #print code
-except:
-    logger.error( 'Failed to open code file')
-    exit(1)
+mac = mac_addr()
+
 verbose = logging.INFO
 bw = defaultdict(list)
+bwreal = defaultdict(list)
 rtt = defaultdict(list)
 loss = defaultdict(list)
+statistics = []
 cur2.execute("select id, ip, asn, webdomain, time, bandwidth, pagesize, latency, lossrate, maxbw, type from web_perf{0} where time > '{1}'".format(str(version), strtime))
+strtime = time.strftime("%Y-%m-%d %H:%M:%S")
 result = cur2.fetchall()
 for entry in result:
     if(entry[9]>0 and entry[6]>200000):
         bw[entry[10]].append(1/entry[9])
         bw['overall'].append(1/entry[9])
+        bwreal[entry[10]].append(entry[9])
+        bwreal['overall'].append(entry[9])
     if(entry[7]>0):
         rtt[entry[10]].append(entry[7])
         rtt['overall'].append(entry[7])
@@ -69,15 +69,27 @@ for entry in result:
         loss['overall'].append(entry[8])
 for key in bw:
     avgbw = len(bw[key])/sum(bw[key])
-    cur2.execute("insert into avgbw{0} values('{1}', '{4}',{2}, '{3}')".format(str(version), code, avgbw, key, strtime))
+    cur2.execute("insert into avgbw{0} values('{1}', '{4}',{2}, '{3}')".format(str(version), mac, avgbw, key, strtime))
+    vmin = min(bwreal[key])
+    vmax = max(bwreal[key])
+    vmean, stdv = meanstdv(bwreal[key])
+    statistics.append('bw|{0}|{1}|{2}|{3}|{4}'.format(  key, vmin, vmax, avgbw, stdv))
 for key in rtt:
     avgrtt = sum(rtt[key])/len(rtt[key])
-    cur2.execute("insert into avgrtt{0} values('{1}', now(),{2}, '{3}')".format(str(version), code, avgrtt, key))
+    cur2.execute("insert into avgrtt{0} values('{1}', now(),{2}, '{3}')".format(str(version), mac, avgrtt, key))
+    vmin = min(rtt[key])
+    vmax = max(rtt[key])
+    vmean, stdv = meanstdv(rtt[key])
+    statistics.append('rtt|{0}|{1}|{2}|{3}|{4}'.format(  key, vmin, vmax, vmean, stdv))
 for key in loss:
     avgloss = sum(loss[key])/len(loss[key])
-    cur2.execute("insert into avgloss{0} values('{1}', now(),{2}, '{3}')".format(str(version), code, avgloss, key))
+    cur2.execute("insert into avgloss{0} values('{1}', now(),{2}, '{3}')".format(str(version), mac, avgloss, key))
+    vmin = min(loss[key])
+    vmax = max(loss[key])
+    vmean, stdv = meanstdv(loss[key])
+    statistics.append('loss|{0}|{1}|{2}|{3}|{4}'.format(  key, vmin, vmax, vmean, stdv))
 pm2.commit()
 cur2.close(); pm2.close()
-
-
+with open(dirname+'/current-'+str(mac)+'-'+str(version),'w') as fh:
+    fh.write(strtime+'||||'+'||'.join(statistics))
 logger.info( "Main thread done @ "+time.strftime("%Y-%m-%d %H:%M:%S")+" Total time: "+str(etime-stime)+" secs\n\n")

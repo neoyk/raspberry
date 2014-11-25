@@ -10,10 +10,13 @@ cur1=pm1.cursor()
 #step1 upload metadata before reset
 data = []
 for v in ['4','6']:
-    cur1.execute("select id, crawl, error, slow from ipv{0}server".format(v))
-    result = cur1.fetchall()
-    for entry in result:
-        data.append( v+'||'+'|'.join([str(i) for i in entry]) )
+    try:
+        cur1.execute("select id, crawl, error, slow from ipv{0}server".format(v))
+        result = cur1.fetchall()
+        for entry in result:
+            data.append( v+'||'+'|'.join([str(i) for i in entry]) )
+    except:
+        pass
 #for entry in data:
 #    print entry
 noin = len(data)
@@ -36,6 +39,8 @@ req = urllib2.Request(url)
 response = urllib2.urlopen(req)
 output = response.read()
 for line in output.split('\n'):
+    if len(line)< 8:
+        continue
     #print line
     if line.startswith('system '):
         try:

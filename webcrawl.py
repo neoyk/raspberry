@@ -1,6 +1,6 @@
 #! /bin/env python
 # -*- coding: utf-8 -*-
-import os,sys,threading,time,re,shlex,subprocess,urllib,urlparse, logging, logging.handlers, glob, signal, locale, math
+import os,sys,threading,time,re,shlex,subprocess,urllib,urlparse, logging, logging.handlers, glob, signal, locale, math, uuid
 import MySQLdb, maxminddb, IPy
 import dns.resolver #install dnspython first http://www.dnspython.org/
 
@@ -43,6 +43,26 @@ def burstdetect(totalpacket,loss):
     else:
         return 0
 
+def bwftop(bw):
+    "change bw from float to string with proper unit"
+    if(bw>1024**2):
+        p = str(round(bw/1024**2,2))+' mbps'
+    elif(bw>1024):
+        p = str(round(bw/1024,2))+' kbps'
+    elif(bw>0):
+        p = str(round(bw,2))+' bps'
+    else:
+        p = 'NA'
+    return p
+
+def connect_detection(version=4):       
+    domainlist=['www.cernet2.edu.cn', 'www.google.com','www.akamai.com']
+    for domain in domainlist:
+        con, _, _, _ = rttmeasure(domain,version)
+        if con:
+            return True
+    return False
+
 def dnslookup(querydomain,type='A'):
     #only for IP addr to ASN mapping
     type=type.upper()
@@ -66,6 +86,70 @@ def dnslookup(querydomain,type='A'):
     if(type=='TXT'):
         response.append(str(answer.response.answer[0][0]))  #ASN or URL
         return response
+
+def ip2asn(ip,version=4):
+    if(version==4):
+        ip2list = ip.split('.')
+        ip2list.reverse()
+        domain='.'.join(ip2list)+'.ip2asn.sasm4.net'
+    elif(version==6):
+        ipt = IPy.IP(ip)
+        ipfull = ipt.strFullsize(0)
+        ip2list = ipfull.split(':')
+        ip2list.reverse()
+        domain='.'.join(ip2list)+'.ip6asn.sasm4.net'
+    else:
+        return "Wrong IP version"
+    asn=dnslookup(domain,'txt')
+    asn=asn[0].replace('"','')
+    if(asn.count('23456')): # 4 bytes ASN
+        return ip2origin(ip,version)
+    else:
+        return asn.upper()
+
+def ip2origin(ip,version=4):
+    if(version==4):
+        ip2list = ip.split('.')
+        ip2list.reverse()
+        domain='.'.join(ip2list)+'.origin.asn.cymru.com'
+    elif(version==6):
+        ipt = IPy.IP(ip)
+        ipfull = ipt.strFullsize(0).replace(':','')
+        ip2list = [n for n in ipfull]
+        ip2list.reverse()
+        domain='.'.join(ip2list)+'.origin6.asn.cymru.com'
+    else:
+        return "Wrong IP version"
+    asn=dnslookup(domain,'txt')
+    asn=asn[0].replace('"','').split('|')[0]
+    if asn.startswith('23456 '):
+        asn = asn[6:]
+    #text = "198171 | 2a03:b780::/32 | CZ | ripencc | 2011-10-25"
+    return 'AS'+asn.rstrip()
+
+def mac_addr():
+    mac_int = uuid.getnode()
+    if (mac_int>>40)%2:
+        mac = '0'*12
+    else:
+        mac = '{0:012x}'.format(mac_int)
+    return mac
+
+def meanstdv(x):
+    if len(x)==0:
+        return 0,0
+    from math import sqrt
+    n, mean, std = len(x), 0, 0
+    for a in x:
+        mean = mean + a
+    mean = mean / float(n)
+    for a in x:
+        std = std + (a - mean)**2
+    if n==1:
+        std = 0
+    else:
+        std = sqrt(std / float(n-1))
+    return mean, std
 
 def rttmeasure(domain,version=4):
     # accpet as input both domain and ip address
@@ -118,54 +202,6 @@ def rttmeasure(domain,version=4):
     else:
         return (0,ip,-1, errmsg)
 
-def connect_detection(version=4):       
-    domainlist=['www.cernet2.edu.cn', 'www.google.com','www.akamai.com']
-    for domain in domainlist:
-        con, _, _, _ = rttmeasure(domain,version)
-        if con:
-            return True
-    return False
-
-def ip2asn(ip,version=4):
-    if(version==4):
-        ip2list = ip.split('.')
-        ip2list.reverse()
-        domain='.'.join(ip2list)+'.ip2asn.sasm4.net'
-    elif(version==6):
-        ipt = IPy.IP(ip)
-        ipfull = ipt.strFullsize(0)
-        ip2list = ipfull.split(':')
-        ip2list.reverse()
-        domain='.'.join(ip2list)+'.ip6asn.sasm4.net'
-    else:
-        return "Wrong IP version"
-    asn=dnslookup(domain,'txt')
-    asn=asn[0].replace('"','')
-    if(asn.count('23456')): # 4 bytes ASN
-        return ip2origin(ip,version)
-    else:
-        return asn.upper()
-
-def ip2origin(ip,version=4):
-    if(version==4):
-        ip2list = ip.split('.')
-        ip2list.reverse()
-        domain='.'.join(ip2list)+'.origin.asn.cymru.com'
-    elif(version==6):
-        ipt = IPy.IP(ip)
-        ipfull = ipt.strFullsize(0).replace(':','')
-        ip2list = [n for n in ipfull]
-        ip2list.reverse()
-        domain='.'.join(ip2list)+'.origin6.asn.cymru.com'
-    else:
-        return "Wrong IP version"
-    asn=dnslookup(domain,'txt')
-    asn=asn[0].replace('"','').split('|')[0]
-    if asn.startswith('23456 '):
-        asn = asn[6:]
-    #text = "198171 | 2a03:b780::/32 | CZ | ripencc | 2011-10-25"
-    return 'AS'+asn.rstrip()
-
 def sizelimit(bw, rtt):
     """calculate minimum pagesize to reach a certain bw(in mbps) for a certain RTT(in ms)"""
     if(bw<0 or rtt<0):
@@ -178,21 +214,10 @@ def sizelimit(bw, rtt):
     Tcubic = 1.26 * (bw * rtt * 128)**(4/3.0) / MSS**(1.0/3)
     return Tss+Tcubic
 
-def bwftop(bw):
-    "change bw from float to string with proper unit"
-    if(bw>1024**2):
-        p = str(round(bw/1024**2,2))+' mbps'
-    elif(bw>1024):
-        p = str(round(bw/1024,2))+' kbps'
-    elif(bw>0):
-        p = str(round(bw,2))+' bps'
-    else:
-        p = 'NA'
-    return p
-
 class webperf(threading.Thread):
     def __init__(self,idlist, version, name, verbose = logging.INFO ):
         threading.Thread.__init__(self)
+        self.mac = mac_addr()
         self.idlist = idlist
         if(version!=4 and version !=6):
             version = 4
@@ -223,7 +248,7 @@ class webperf(threading.Thread):
             ip = '::'
         else:
             ip = '0.0.0.0'
-        self.cur1.execute("insert into web_perf"+str(self.version)+" values(%s, %s, 'AS0', %s, now(), 0, 0, 0, -1, -1, 0, %s)",(webid, ip, webdomain, self.wtype))
+        self.cur1.execute("insert into web_perf"+str(self.version)+" values(%s, %s, %s, 'AS0', %s, now(), 0, 0, 0, -1, -1, 0, %s)",(self.mac, webid, ip, webdomain, self.wtype))
         self.cur1.execute("update ipv"+str(self.version)+"server set error=error-1,performance='N/A' where id = %s",( webid, ))
 
     def ipchange(self,webid,ip,asn):
@@ -364,7 +389,7 @@ class webperf(threading.Thread):
         self.cur1.execute("update ipv"+str(self.version)+"server set performance=%s, bandwidth=%s where id = %s",(perf, maxbw, webid))
         if(pagesize>1.5*oldpagesize or pagesize*1.5<oldpagesize):
             self.cur1.execute("update ipv"+str(self.version)+"server set pagesize=%s where id = %s",(pagesize, webid))
-        self.cur1.execute("insert into web_perf"+str(self.version)+" values(%s, %s, %s, %s, now(), %s, %s, %s, %s, %s, %s, %s)",(webid, ip, asn, webdomain, bandwidth, pagesize, latency, lossrate, actual_loss, maxbw, self.wtype))
+        self.cur1.execute("insert into web_perf"+str(self.version)+" values(%s, %s, %s, %s, %s, now(), %s, %s, %s, %s, %s, %s, %s)",(self.mac, webid, ip, asn, webdomain, bandwidth, pagesize, latency, lossrate, actual_loss, maxbw, self.wtype))
         if(bandwidth>2500000 or maxbw>2500000): # Bps to bps to mbps
             bwlevel = 20
         else:
@@ -546,7 +571,7 @@ class webperf(threading.Thread):
                 lossrate = -1
                 maxbw = 0
                 self.logger.info( "Finish 4xx error: %s"%( (webid, ip, asn, webdomain, bandwidth, pagesize, latency, lossrate, success),) )
-                self.cur1.execute("insert into web_perf"+str(self.version)+" values(%s, %s, %s, %s, now(), %s, %s, %s, %s, %s, %s, %s)",(webid, ip, asn, webdomain, bandwidth,pagesize, latency, lossrate, lossrate, maxbw, self.wtype))
+                self.cur1.execute("insert into web_perf"+str(self.version)+" values(%s, %s, %s, %s, %s, now(), %s, %s, %s, %s, %s, %s, %s)",(self.mac, webid, ip, asn, webdomain, bandwidth,pagesize, latency, lossrate, lossrate, maxbw, self.wtype))
                 self.cur1.execute("update ipv"+str(self.version)+"server set crawl=crawl-1 where id = %s",( webid, ))
             else:
                 # connection timed out, 5xx server error

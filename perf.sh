@@ -1,8 +1,22 @@
+#! /bin/bash
+#exit
+RANDOM=$$
+/usr/bin/mysqlcheck --repair raspberry
 sleep $(($RANDOM%600))
 cd /root/mnt
-num=$(($((0x`md5sum code |cut -d' ' -f1`))%24))
+rm -f tmp.*
+rm -f 420*
+rm -f 620*
+if [ ! -f hour ]
+then
+	echo $(($RANDOM%24)) > hour
+fi
+date
+#num=$(($((0x`md5sum address |cut -d' ' -f1`))%24))
+read num < hour
 if [ $num -eq `date +%H` ];
 then
+	service mysql restart
 	echo "IP detecting & syncweb"
 	/usr/bin/python syncweb.py
 	/usr/bin/python ipdetection.py
