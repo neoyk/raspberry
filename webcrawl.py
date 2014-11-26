@@ -339,7 +339,7 @@ class webperf(threading.Thread):
                 packetcount = int(m[i][0])
                 datasize = float(m[i][1])
                 losspacket = int(m[i][2])
-                if( packetcount and datasize>0):
+                if( packetcount ==0 and datasize>0):
                     continue
                 if((datastart==0 and packetcount == 0) or (datastart==0 and datasize/packetcount<300)):
                     continue
