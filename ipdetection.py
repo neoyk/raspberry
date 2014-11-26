@@ -11,7 +11,7 @@ else:
     domain = 'perf.sasm3.net'
 
 if len(sys.argv)>1:
-    idle = int(sys.argv[1]) + 30
+    idle = int(sys.argv[1])
     time.sleep(idle)
 def downloader(domain,directory,pattern, version = 4):
     #conn = httplib.HTTPConnection(domain)
