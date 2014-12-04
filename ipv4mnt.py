@@ -56,11 +56,11 @@ cur2.execute("select id, ip, asn, webdomain, time, bandwidth, pagesize, latency,
 strtime = time.strftime("%Y-%m-%d %H:%M:%S")
 result = cur2.fetchall()
 for entry in result:
-    if(entry[9]>0 and entry[6]>200000):
-        bw[entry[10]].append(1/entry[9])
-        bw['overall'].append(1/entry[9])
-        bwreal[entry[10]].append(entry[9])
-        bwreal['overall'].append(entry[9])
+    if(entry[5]>0 and entry[6]>200000):
+        bw[entry[10]].append(1/entry[5])
+        bw['overall'].append(1/entry[5])
+        bwreal[entry[10]].append(entry[5])
+        bwreal['overall'].append(entry[5])
     if(entry[7]>0):
         rtt[entry[10]].append(entry[7])
         rtt['overall'].append(entry[7])

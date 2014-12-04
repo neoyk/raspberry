@@ -322,6 +322,8 @@ class webperf(threading.Thread):
         m = re.findall("\d+\.\d+[ -<>]+\d+\.\d+\s.*\s(\d+)\s.*\s(\d+)\s.*\s(\d+)\s.*\s\d+\s",log)
         #m = re.search("\d+\.\d+[ -<>]+\d+\.\d+\s.*\s(\d+)\s.*\s(\d+)\s.*\s(\d+)\s.*\s\d+\s",log)
         maxbw = 0
+        avgbw = 0
+        bwlist = []
         maxdata = 0 # the maximum data block in one bulk transfer (between two dull intervals)
         curdata = 0 # the current data block
         totaldata = 0
@@ -371,6 +373,7 @@ class webperf(threading.Thread):
                 else:
                     # if there is packet loss in every interval then maxbw = 0
                     bwnow = 8*datasize/interval *1460/1514.0
+                    bwlist.append(bwnow)
                     if(bwnow>maxbw):
                         maxbw = bwnow
                 self.logger.debug( (m[i],nopacket,curdata,maxdata,serverslow,totaldata) )
@@ -379,10 +382,11 @@ class webperf(threading.Thread):
             if(totalpacket):
                 actual_loss = 100.0*losscount/totalpacket
                 lossrate = 100.0*lossinterval/totalpacket
+            if(bwlist):
+                avgbw = sum(bwlist)/len(bwlist)
             totaldata = totaldata *1460 / 1514.0 # payload / packet length
-            self.logger.info("interval,totalpacket,totaldata,maxbw,maxdata,lossrate,serverslow:")
-            self.logger.info( "{0} {1} {2} {3} {4} {5} {6}".format(interval,totalpacket,totaldata,maxbw,maxdata,lossrate,serverslow) )
-        return (totaldata, maxdata, maxbw, serverslow, lossrate, actual_loss)
+            self.logger.info( "interval: {0}, totalpackets: {1}, totaldata:{2}, maxbw:{3}, avgbw:{4}, maxdata:{5}, lossrate:{6}, actual lossrate:{7}, serverslow:{8}".format(interval,totalpacket,totaldata,maxbw, avgbw, maxdata,lossrate,actual_loss,serverslow) )
+        return (totaldata, maxdata, maxbw, avgbw, serverslow, lossrate, actual_loss)
 
     def perfsuccess(self, webid, webdomain, ip, asn, pagesize, oldpagesize, bandwidth, maxbw, latency, lossrate, actual_loss, serverslow):
         peak = bwftop(maxbw)
@@ -545,7 +549,7 @@ class webperf(threading.Thread):
                 else:
                 #def tsharkparse(self,packets,latency,ip, pagesize):
                 #return (totaldata, maxdata, maxbw, serverslow, lossrate)
-                    _, maxdata, maxbw, serverslow, lossrate, actual_loss = self.tsharkparse(packets, latency, ip)
+                    _, maxdata, maxbw, _ ,serverslow, lossrate, actual_loss = self.tsharkparse(packets, latency, ip)
                     if(maxdata<3*pagesize/4 and serverslow>0):
                         self.logger.warning( "slow server detected")
                         # no traffic during more than three intervals and maxbw < 2.5MBps
@@ -556,15 +560,12 @@ class webperf(threading.Thread):
                 
                 self.logger.info( "Finish successfully: %s\n"%(result,))
             elif(killed and success):
-                totaldata, maxdata, maxbw, serverslow, lossrate, actual_loss = self.tsharkparse(packets, latency, ip)
-                self.logger.info( "webid, ip, asn, webdomain, totaldata, maxbw, maxdata, latency:")
-                self.logger.info( "%s"%((webid, ip, asn, webdomain, totaldata, maxbw, maxdata, latency), ))
+                totaldata, maxdata, maxbw, bandwidth, serverslow, lossrate, actual_loss = self.tsharkparse(packets, latency, ip)
                 if(maxdata<3*totaldata/4 and serverslow>0):
                     self.logger.warning( "slow server detected")
                     # no traffic during more than three intervals and maxbw < 2.5MBps
                     # indicates this website is too slow for link performance estimation
                     self.cur1.execute("update ipv"+str(self.version)+"server set slow=slow-1 where id = %s",( webid, ))
-                bandwidth = maxbw
                 self.perfsuccess( webid, webdomain, ip, asn, totaldata, result[3], bandwidth, maxbw, latency, lossrate, actual_loss, serverslow)
             elif(log.count("HTTP request sent, awaiting response... 4")):
                 # 404 not found, 403 forbidden, 400 bad request
