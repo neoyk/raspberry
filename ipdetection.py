@@ -85,8 +85,8 @@ headers_138 =  'Host:1111.ip138.com'
 #print downloader('1111.ip138.com','/ic.asp','<center>.*\[(.*)\].*</center>')
 _,ip['CE'],asn['CE'] = downloader('115.25.86.4','/clientip.php','(.*)')
 _,ipv6,asn6 = downloader('[2001:da8:243:8601::864]','/clientip.php','(.*)', 6)
-_,ip['Int1'],asn['Int1'] = downloader('checkmyip.com','/','Your IP is:.*>(\d.*\d)</span')
-_,ip['Int2'],asn['Int2'] = downloader('whatismyipaddress.com','/ip-lookup','name="LOOKUPADDRESS" value="(\d.*\d)"\ssize="')
+_,ip['I1'],asn['I1'] = downloader('checkmyip.com','/','Your IP is:.*>(\d.*\d)</span')
+_,ip['I2'],asn['I2'] = downloader('whatismyipaddress.com','/ip-lookup','name="LOOKUPADDRESS" value="(\d.*\d)"\ssize="')
 
 try:
     for key in weblist_138.keys():
