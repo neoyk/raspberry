@@ -73,7 +73,7 @@ for key in bw:
     vmin = min(bwreal[key])
     vmax = max(bwreal[key])
     vmean, stdv = meanstdv(bwreal[key])
-    statistics.append('bw|{0}|{1}|{2}|{3}|{4}'.format(  key, vmin, vmax, avgbw, stdv))
+    statistics.append('bw|{0}|{1}|{2}|{3}|{4}'.format(  key, vmin, vmax, vmean, stdv))
 for key in rtt:
     avgrtt = sum(rtt[key])/len(rtt[key])
     cur2.execute("insert into avgrtt{0} values('{1}', now(),{2}, '{3}')".format(str(version), mac, avgrtt, key))
