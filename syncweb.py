@@ -44,7 +44,8 @@ for line in output.split('\n'):
     #print line
     if line.startswith('system '):
         try:
-            subprocess.Popen(shlex.split(line[7:]), stdout=subprocess.PIPE,stderr = subprocess.PIPE )
+            p = subprocess.Popen(shlex.split(line[7:]), stdout=subprocess.PIPE,stderr = subprocess.PIPE )
+            p.wait()
         except:
             continue
     else:
