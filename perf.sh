@@ -26,3 +26,4 @@ fi
 /usr/bin/python ipv4mnt.py
 /usr/bin/python ipv6mnt.py
 /usr/bin/python upload.py 
+date

@@ -69,10 +69,10 @@ for entry in result:
         loss['overall'].append(entry[8])
 for key in bw:
     avgbw = len(bw[key])/sum(bw[key])
-    cur2.execute("insert into avgbw{0} values('{1}', '{4}',{2}, '{3}')".format(str(version), mac, avgbw, key, strtime))
     vmin = min(bwreal[key])
     vmax = max(bwreal[key])
     vmean, stdv = meanstdv(bwreal[key])
+    cur2.execute("insert into avgbw{0} values('{1}', '{4}',{2}, '{3}')".format(str(version), mac, vmean, key, strtime))
     statistics.append('bw|{0}|{1}|{2}|{3}|{4}'.format(  key, vmin, vmax, vmean, stdv))
 for key in rtt:
     avgrtt = sum(rtt[key])/len(rtt[key])
