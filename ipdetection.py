@@ -18,7 +18,7 @@ def downloader(domain,directory,pattern, version = 4):
     #conn.request("GET", directory ,_, headers)
     #response = conn.getresponse()
     try:
-        response = urllib2.urlopen('http://'+domain+directory)
+        response = urllib2.urlopen(url='http://'+domain+directory,timeout=10)
         data = response.read()
         #conn.close()
         m = re.search(pattern,data)
@@ -82,7 +82,7 @@ headers_138 =  'Host:1111.ip138.com'
 #headers_138 =  'H' 
 
 #print downloader('1111.ip138.com','/ic.asp','<center>.*\[(.*)\].*</center>')
-ip['IF'] = re.search("inet addr:(\d+\.\d+\.\d+\.\d+)",subprocess.Popen(shlex.split('/sbin/ifconfig eth0'),stdout=subprocess.PIPE).stdout.read()).group(1)
+ip['IF'] = re.search("inet addr:(\d+\.\d+\.\d+\.\d+)",subprocess.Popen(shlex.split('/sbin/ifconfig'),stdout=subprocess.PIPE).stdout.read()).group(1)
 _,ip['CE'],asn['CE'] = downloader('115.25.86.4','/clientip.php','(.*)')
 _,ip['I1'],asn['I1'] = downloader('checkmyip.com','/','Your.*IP.*is:.*>(\d+\.\d+\.\d+\.\d+)</span')
 _,ip['I2'],asn['I2'] = downloader('whatismyipaddress.com','/ip-lookup','name="LOOKUPADDRESS" value="(\d+\.\d+\.\d+\.\d+)"\ssize="')
