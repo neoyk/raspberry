@@ -72,7 +72,6 @@ def refresh():
     #print weblist_138
     #print headers_138
     return True
-
 dirname, _ = os.path.split(os.path.abspath(sys.argv[0]))
 ip = collections.defaultdict(str)
 asn = collections.defaultdict(str)
@@ -83,10 +82,11 @@ headers_138 =  'Host:1111.ip138.com'
 #headers_138 =  'H' 
 
 #print downloader('1111.ip138.com','/ic.asp','<center>.*\[(.*)\].*</center>')
+ip['IF'] = re.search("inet addr:(\d+\.\d+\.\d+\.\d+)",subprocess.Popen('/sbin/ifconfig',stdout=subprocess.PIPE).stdout.read()).group(1)
 _,ip['CE'],asn['CE'] = downloader('115.25.86.4','/clientip.php','(.*)')
+_,ip['I1'],asn['I1'] = downloader('checkmyip.com','/','Your.*IP.*is:.*>(\d+\.\d+\.\d+\.\d+)</span')
+_,ip['I2'],asn['I2'] = downloader('whatismyipaddress.com','/ip-lookup','name="LOOKUPADDRESS" value="(\d+\.\d+\.\d+\.\d+)"\ssize="')
 _,ipv6,asn6 = downloader('[2001:da8:243:8601::864]','/clientip.php','(.*)', 6)
-_,ip['I1'],asn['I1'] = downloader('checkmyip.com','/','Your IP is:.*>(\d.*\d)</span')
-_,ip['I2'],asn['I2'] = downloader('whatismyipaddress.com','/ip-lookup','name="LOOKUPADDRESS" value="(\d.*\d)"\ssize="')
 
 try:
     for key in weblist_138.keys():
