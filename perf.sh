@@ -46,5 +46,5 @@ fi
 /usr/bin/python ipv6mnt.py
 /usr/bin/python upload.py 
 rm -f pid
-print "END @ " && date
+printf "END @ " && date
 echo
