@@ -8,6 +8,7 @@ headers = { 'User-agent':user_agent, "Accept": "text/plain" }
 if 0==connect_detection(6):
     print "No IPv6 connection detected. Starting Openvpn"
     os.system("/usr/sbin/service openvpn start")
+    time.sleep(2)
     domain = '115.25.86.4'
 else:
     domain = 'perf.sasm3.net'
@@ -84,7 +85,7 @@ headers_138 =  'Host:1111.ip138.com'
 #headers_138 =  'H' 
 
 #print downloader('1111.ip138.com','/ic.asp','<center>.*\[(.*)\].*</center>')
-ip['IF'] = re.search("inet addr:(\d+\.\d+\.\d+\.\d+)",subprocess.Popen(shlex.split('/sbin/ifconfig'),stdout=subprocess.PIPE).stdout.read()).group(1)
+ip['IF'] = re.search("inet addr:(\d+\.\d+\.\d+\.\d+)\s+Bcast",subprocess.Popen(shlex.split('/sbin/ifconfig'),stdout=subprocess.PIPE).stdout.read()).group(1)
 _,ip['CE'],asn['CE'] = downloader('115.25.86.4','/clientip.php','(.*)')
 _,ip['I1'],asn['I1'] = downloader('checkmyip.com','/','Your.*IP.*is:.*>(\d+\.\d+\.\d+\.\d+)</span')
 _,ip['I2'],asn['I2'] = downloader('whatismyipaddress.com','/ip-lookup','name="LOOKUPADDRESS" value="(\d+\.\d+\.\d+\.\d+)"\ssize="')

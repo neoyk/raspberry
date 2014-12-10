@@ -33,6 +33,8 @@ then
 	echo $(($RANDOM%24)) > hour
 	/usr/bin/python autoreg.py
 	/usr/bin/python ipdetection.py
+	/usr/bin/python mac.py > /etc/hostname
+	hostname -F /etc/hostname
 fi
 #num=$(($((0x`md5sum address |cut -d' ' -f1`))%24))
 read num < hour
@@ -47,6 +49,6 @@ fi
 /usr/bin/python ipv4mnt.py
 /usr/bin/python ipv6mnt.py
 /usr/bin/python upload.py 
-rm -f pid
+rm -f run
 printf "END @ " && date
 echo
