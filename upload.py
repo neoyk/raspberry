@@ -37,10 +37,10 @@ if noin == 0 :
     print 0,0
 else:
     values['data'] = '||||'.join(data)
-    if os.path.isfile(dirname+'/current-'+str(mac)+'-4','r'):
+    if os.path.isfile(dirname+'/current-'+str(mac)+'-4'):
         with open(dirname+'/current-'+str(mac)+'-4','r') as fh:
             values['v4stat'] = fh.readline().rstrip()
-    if os.path.isfile(dirname+'/current-'+str(mac)+'-6','r'):
+    if os.path.isfile(dirname+'/current-'+str(mac)+'-6'):
         with open(dirname+'/current-'+str(mac)+'-6','r') as fh:
             values['v6stat'] = fh.readline().rstrip()
     url = 'http://'+domain+'/raspberry/receive.php'
