@@ -2,7 +2,7 @@
 # wget --delete-after --header="Host:1111.ip138.com" 112.84.191.168/ic.asp
 
 from webcrawl import *
-import subprocess, os, urllib, urllib2
+import subprocess, shlex, os, urllib, urllib2, time
 mac = mac_addr()
 # 20:36:59 up 13 days,  6:23,  3 users,  load average: 0.40, 0.34, 0.32
 load5min = re.search("average: (.*), (.*), (.*)",subprocess.Popen(shlex.split('uptime'),stdout=subprocess.PIPE).stdout.read()).group(2)
@@ -19,5 +19,7 @@ para = urllib.urlencode(values)
 req = urllib2.Request(url, para)
 response = urllib2.urlopen(req)
 output = response.read()
-print "Status uploaded:",load5min, dusage, output
+print time.strftime("%Y-%m-%d %H:%M"),"Status uploaded:",load5min, dusage, output
+if(int(output)>1):
+    subprocess.Popen(shlex.split("nohup bash /root/mnt/perf.sh >> /root/mnt/log.perf 2>&1"))
 response.close()

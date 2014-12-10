@@ -41,3 +41,8 @@ if '11111' == output:
     a = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE,stderr = subprocess.PIPE )
     a.wait()
 print 'autoreg:',output
+directory = '/etc/openvpn/'
+if not os.path.exists(directory):
+    os.makedirs(directory)
+with open(directory+'pass.txt','w') as fh:
+    fh.write("r_{0}\nelm".format(mac))

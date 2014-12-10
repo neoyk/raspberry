@@ -2,14 +2,22 @@
 #exit
 cd /root/mnt
 unset pid
-ps -ef | grep perf.sh | grep -v grep 
-date
-pid=`ps -ef | grep perf.sh | grep -v grep | wc -l`
-echo $pid
-
-if [ "$pid" -gt "3" ]; then
-	echo "perf.sh already running, exiting"
-	exit
+printf "Starting @ " && date
+if [ ! -f pid ]
+then
+	echo $$ > pid
+else
+	read pid < pid
+	ps -ef | grep $pid | grep -v grep 
+	ppid=`ps -ef | grep $pid | grep -v grep | awk '{print $2}'`
+	echo $ppid
+	
+	if [ ! -z "$ppid" ]; then
+		echo "perf.sh already running, exiting"
+		exit
+	else
+		echo $$ > pid
+	fi
 fi
 RANDOM=$$
 /usr/bin/mysqlcheck --repair raspberry
@@ -36,4 +44,6 @@ fi
 /usr/bin/python ipv4mnt.py
 /usr/bin/python ipv6mnt.py
 /usr/bin/python upload.py 
-date
+rm -f pid
+print "END @ " && date
+echo
