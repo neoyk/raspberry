@@ -3,21 +3,21 @@
 cd /root/mnt
 unset pid
 printf "Starting @ " && date
-if [ ! -f pid ]
+if [ ! -f run ]
 then
-	echo $$ > pid
+	echo $$ > run
 else
-	read pid < pid
+	read pid < run
 	ps -ef | grep $pid | grep perf.sh | grep -v grep 
 	ppid=`ps -ef | grep $pid |grep perf.sh | grep -v grep | awk '{print $2}'`
 	echo $ppid
 	
-	if [ ! -z "$ppid" ]; then
+	if [ "$$" != "$ppid" ] && [ ! -z "$ppid" ]; then
 		echo "perf.sh already running, exiting"
 		echo
 		exit
 	else
-		echo $$ > pid
+		echo $$ > run
 	fi
 fi
 RANDOM=$$
