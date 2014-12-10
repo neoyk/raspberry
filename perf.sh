@@ -23,7 +23,7 @@ fi
 RANDOM=$$
 /usr/bin/mysqlcheck --repair raspberry
 sleep 120
-sleep $(($RANDOM%600))
+sleep $(($RANDOM%500))
 /usr/sbin/ntpdate s1a.time.edu.cn
 rm -f tmp.*
 rm -f 420*
@@ -31,6 +31,8 @@ rm -f 620*
 if [ ! -f hour ]
 then
 	echo $(($RANDOM%24)) > hour
+	/usr/bin/python autoreg.py
+	/usr/bin/python ipdetection.py
 fi
 #num=$(($((0x`md5sum address |cut -d' ' -f1`))%24))
 read num < hour
