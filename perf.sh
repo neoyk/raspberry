@@ -8,8 +8,8 @@ then
 	echo $$ > pid
 else
 	read pid < pid
-	ps -ef | grep $pid | grep -v grep 
-	ppid=`ps -ef | grep $pid | grep -v grep | awk '{print $2}'`
+	ps -ef | grep $pid | grep perf.sh | grep -v grep 
+	ppid=`ps -ef | grep $pid |grep perf.sh | grep -v grep | awk '{print $2}'`
 	echo $ppid
 	
 	if [ ! -z "$ppid" ]; then
@@ -21,9 +21,9 @@ else
 	fi
 fi
 RANDOM=$$
-sleep 120
+sleep 30
 /usr/bin/mysqlcheck --repair raspberry
-sleep $(($RANDOM%500))
+sleep $(($RANDOM%570))
 /usr/sbin/ntpdate s1a.time.edu.cn
 rm -f tmp.*
 rm -f 420*
