@@ -63,6 +63,12 @@ def connect_detection(version=4):
             return True
     return False
 
+def vpn_detection():       
+    con, _, _, _ = rttmeasure('10.8.0.1',4)
+    if con:
+        return True
+    return False
+
 def dnslookup(querydomain,type='A'):
     #only for IP addr to ASN mapping
     type=type.upper()

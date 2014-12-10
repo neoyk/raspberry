@@ -14,6 +14,7 @@ else
 	
 	if [ ! -z "$ppid" ]; then
 		echo "perf.sh already running, exiting"
+		echo
 		exit
 	else
 		echo $$ > pid

@@ -9,6 +9,12 @@ from random import shuffle
 
 version = 6
 if 0==connect_detection(version):
+    print "No IPv6 connection detected. Starting Openvpn"
+    os.system("/usr/sbin/service openvpn start")
+    exit()
+
+if 1==vpn_detection():
+    print "Openvpn detected. Quiting"
     exit()
 
 verbose = logging.INFO
