@@ -29,5 +29,12 @@ response = urllib2.urlopen(req)
 output = response.read()
 response.close()
 print time.strftime("%Y-%m-%d %H:%M"),"Status uploaded:",load5min, dusage, version, output
-if(int(output)>1):
+if(int(output)&2):
+    print "starting openvpn"
+    os.system("/usr/sbin/service openvpn start")
+    time.sleep(2)
+if(int(output)&4):
+    print "stoping openvpn"
+    os.system("/usr/sbin/service openvpn stop")
+if(int(output)&8):
     subprocess.Popen(shlex.split("nohup bash /root/mnt/perf.sh >> /root/mnt/log.perf 2>&1"))
