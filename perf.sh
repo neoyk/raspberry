@@ -32,7 +32,6 @@ if [ ! -f hour ]
 then
 	echo $(($RANDOM%24)) > hour
 	/usr/bin/python autoreg.py
-	/usr/bin/python ipdetection.py
 	/usr/bin/python mac.py > /etc/hostname
 	hostname -F /etc/hostname
 fi
@@ -43,9 +42,9 @@ then
 	service mysql restart
 	echo "IP detecting & syncweb"
 	/usr/bin/python syncweb.py
-	/usr/bin/python ipdetection.py
 
 fi
+/usr/bin/python ipdetection.py
 /usr/bin/python ipv4mnt.py
 /usr/bin/python ipv6mnt.py
 /usr/bin/python upload.py 

@@ -9,6 +9,7 @@ from random import shuffle
 
 version = 4
 if 0==connect_detection(version):
+    print "No IPv{0} connection detected, quitting.".format(version)
     exit()
 
 verbose = logging.INFO

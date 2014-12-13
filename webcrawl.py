@@ -1,6 +1,6 @@
 #! /bin/env python
 # -*- coding: utf-8 -*-
-import os,sys,threading,time,re,shlex,subprocess,urllib,urlparse, logging, logging.handlers, glob, signal, locale, math, uuid
+import os,sys,threading,time,re,shlex,subprocess,urllib,urlparse, logging, logging.handlers, glob, signal, locale, math, uuid, urllib2
 import MySQLdb, maxminddb, IPy
 import dns.resolver #install dnspython first http://www.dnspython.org/
 
@@ -132,6 +132,21 @@ def ip2origin(ip,version=4):
         asn = asn[6:]
     #text = "198171 | 2a03:b780::/32 | CZ | ripencc | 2011-10-25"
     return 'AS'+asn.rstrip()
+
+def downloader(domain,directory,pattern, version = 4):
+    try:
+        response = urllib2.urlopen(url='http://'+domain+directory,timeout=10)
+        data = response.read()
+        #conn.close()
+        m = re.search(pattern,data)
+        if m:
+            return True,m.group(1),ip2asn(m.group(1), version)
+    except:
+        pass
+    if version==4:
+        return False,'0.0.0.0','NO RECORD'
+    else:
+        return False,'::','NO RECORD'
 
 def mac_addr():
     mac_int = uuid.getnode()
