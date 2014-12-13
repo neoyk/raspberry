@@ -2,7 +2,9 @@
 # wget --delete-after --header="Host:1111.ip138.com" 112.84.191.168/ic.asp
 
 from webcrawl import *
+from random import randint
 import subprocess, shlex, os, urllib, urllib2, time
+time.sleep(randint(10,100)/10.0)
 mac = mac_addr()
 # 20:36:59 up 13 days,  6:23,  3 users,  load average: 0.40, 0.34, 0.32
 load5min = re.search("average: (.*), (.*), (.*)",subprocess.Popen(shlex.split('uptime'),stdout=subprocess.PIPE).stdout.read()).group(2)
