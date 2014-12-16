@@ -65,10 +65,10 @@ headers_138 =  'Host:1111.ip138.com'
 #headers_138 =  'H' 
 
 _,ip['CE'],asn['CE'] = downloader('115.25.86.4','/clientip.php','(.*)')
+ip['IF'] = re.search("inet addr:(\d+\.\d+\.\d+\.\d+)\s+Bcast",subprocess.Popen(shlex.split('/sbin/ifconfig'),stdout=subprocess.PIPE).stdout.read()).group(1)
 _,ipv6,asn6 = downloader('[2001:da8:243:8601::864]','/clientip.php','(.*)', 6)
 #print downloader('1111.ip138.com','/ic.asp','<center>.*\[(.*)\].*</center>')
 if hour == int(time.strftime("%H")):
-    ip['IF'] = re.search("inet addr:(\d+\.\d+\.\d+\.\d+)\s+Bcast",subprocess.Popen(shlex.split('/sbin/ifconfig'),stdout=subprocess.PIPE).stdout.read()).group(1)
     _,ip['I1'],asn['I1'] = downloader('checkmyip.com','/','Your.*IP.*is:.*>(\d+\.\d+\.\d+\.\d+)</span')
     _,ip['I2'],asn['I2'] = downloader('whatismyipaddress.com','/ip-lookup','name="LOOKUPADDRESS" value="(\d+\.\d+\.\d+\.\d+)"\ssize="')
     try:
