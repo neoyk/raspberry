@@ -21,14 +21,15 @@ if 0==connect_detection(6):
     domain = '115.25.86.4'
 else:
     domain = 'perf.sasm3.net'
-values= {'mac':mac, 'load5min' : load5min, 'dusage':dusage, 'version':version }
+machine_time = time.strftime("%Y%m%d-%H%M%S")
+values= {'mac':mac, 'load5min' : load5min, 'dusage':dusage, 'version':version,'time':machine_time }
 url = 'http://'+domain+'/raspberry/keepalive.php'
 para = urllib.urlencode(values)
 req = urllib2.Request(url, para)
 response = urllib2.urlopen(req)
 output = response.read()
 response.close()
-print time.strftime("%Y-%m-%d %H:%M"),"Status uploaded:",load5min, dusage, version, output
+print time.strftime("%Y-%m-%d %H:%M"),"Status uploaded:",load5min, dusage, version, machine_time, output
 if(int(output)&2):
     print "starting openvpn"
     os.system("/usr/sbin/service openvpn start")

@@ -24,7 +24,7 @@ RANDOM=$$
 sleep 30
 /usr/bin/mysqlcheck --repair raspberry
 sleep $(($RANDOM%100))
-/usr/sbin/ntpdate s1a.time.edu.cn
+/usr/sbin/ntpdate -u s1a.time.edu.cn
 rm -f tmp.*
 rm -f 420*
 rm -f 620*
