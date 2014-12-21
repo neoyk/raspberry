@@ -6,9 +6,9 @@ from webcrawl import *
 user_agent = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.89 Safari/537.1'
 headers = { 'User-agent':user_agent, "Accept": "text/plain" }
 if 0==connect_detection(6):
-    print "No IPv6 connection detected. Starting Openvpn"
-    os.system("/usr/sbin/service openvpn start")
-    time.sleep(2)
+    #print "No IPv6 connection detected. Starting Openvpn"
+    #os.system("/usr/sbin/service openvpn start")
+    #time.sleep(2)
     domain = '115.25.86.4'
 else:
     domain = 'perf.sasm3.net'

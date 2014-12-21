@@ -33,6 +33,7 @@ then
 	echo $(($RANDOM%24)) > hour
 	/usr/bin/python autoreg.py
 	/usr/bin/python mac.py > /etc/hostname
+	/usr/bin/python syncweb.py
 	hostname -F /etc/hostname
 fi
 #num=$(($((0x`md5sum address |cut -d' ' -f1`))%24))
@@ -40,7 +41,7 @@ read num < hour
 if [ $num -eq `date +%H` ];
 then
 	service mysql restart
-	echo "IP detecting & syncweb"
+	echo "syncweb"
 	/usr/bin/python syncweb.py
 
 fi
