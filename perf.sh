@@ -21,9 +21,8 @@ else
 	fi
 fi
 RANDOM=$$
-sleep 30
 /usr/bin/mysqlcheck --repair raspberry
-sleep $(($RANDOM%100))
+#sleep $(($RANDOM%20))
 /usr/sbin/ntpdate -u s1a.time.edu.cn
 rm -f tmp.*
 rm -f 420*
@@ -35,6 +34,10 @@ then
 	/usr/bin/python mac.py > /etc/hostname
 	/usr/bin/python syncweb.py
 	hostname -F /etc/hostname
+fi
+if [ ! -f second ]
+then
+	echo $(($RANDOM%3600)) > second
 fi
 #num=$(($((0x`md5sum address |cut -d' ' -f1`))%24))
 read num < hour
