@@ -70,7 +70,7 @@ def domain_detection():
     if con:
         return '2001:da8:243:8601::864'
     else:
-        domain = '115.25.86.4'
+        return '115.25.86.4'
 
 def vpn_detection():       
     con, _, _, _ = rttmeasure('10.8.0.1',4)
