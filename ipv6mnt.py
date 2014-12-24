@@ -99,3 +99,4 @@ cur2.close(); pm2.close()
 with open(dirname+'/current-'+str(mac)+'-'+str(version),'w') as fh:
     fh.write(strtime+'||||'+'||'.join(statistics))
 logger.info( "Main thread done @ "+time.strftime("%Y-%m-%d %H:%M:%S")+" Total time: "+str(etime-stime)+" secs\n\n")
+print "IPv{0} measurement done.".format(version)
