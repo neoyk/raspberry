@@ -63,6 +63,15 @@ def connect_detection(version=4):
             return True
     return False
 
+def domain_detection():
+    if connect_detection(6):
+        return 'perf.sasm3.net'
+    con, _, _, _ = rttmeasure('2001:da8:243:8601::1',6)
+    if con:
+        return '2001:da8:243:8601::864'
+    else:
+        domain = '115.25.86.4'
+
 def vpn_detection():       
     con, _, _, _ = rttmeasure('10.8.0.1',4)
     if con:

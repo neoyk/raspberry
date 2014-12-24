@@ -11,10 +11,7 @@ mac = mac_addr()
 start = {}
 values = {'mac':mac}
 
-if 0==connect_detection(6):
-    domain = '115.25.86.4'
-else:
-    domain = 'perf.sasm3.net'
+domain = domain_detection()
 pm1=MySQLdb.connect(host='localhost',user='root',db='raspberry')
 cur1=pm1.cursor()
 

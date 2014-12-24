@@ -12,10 +12,7 @@ if len(sys.argv)>1:
     time.sleep(idle)
 start = {}
 mac = mac_addr()
-if 0==connect_detection(6):
-    domain = '115.25.86.4'
-else:
-    domain = 'perf.sasm3.net'
+domain = domain_detection()
 value = {'mac':mac }
 para = urllib.urlencode(value)
 url = 'http://'+domain+'/raspberry/autoreg.php?'+para

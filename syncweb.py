@@ -20,10 +20,7 @@ for v in ['4','6']:
 #for entry in data:
 #    print entry
 noin = len(data)
-if 0==connect_detection(6):
-    domain = '115.25.86.4'
-else:
-    domain = 'perf.sasm3.net'
+domain = domain_detection()
 if noin :
     values= {'data' : '||||'.join(data) }
     url = 'http://'+domain+'/raspberry/meta_receive.php'

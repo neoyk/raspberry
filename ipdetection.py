@@ -5,13 +5,7 @@ import os,sys,string,re, httplib,  collections, shlex, MySQLdb, urllib, urllib2,
 from webcrawl import *
 user_agent = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.89 Safari/537.1'
 headers = { 'User-agent':user_agent, "Accept": "text/plain" }
-if 0==connect_detection(6):
-    #print "No IPv6 connection detected. Starting Openvpn"
-    #os.system("/usr/sbin/service openvpn start")
-    #time.sleep(2)
-    domain = '115.25.86.4'
-else:
-    domain = 'perf.sasm3.net'
+domain = domain_detection()
 
 if len(sys.argv)>1:
     idle = int(sys.argv[1])
@@ -65,7 +59,10 @@ headers_138 =  'Host:1111.ip138.com'
 #headers_138 =  'H' 
 
 _,ip['CE'],asn['CE'] = downloader('115.25.86.4','/clientip.php','(.*)')
-ip['IF'] = re.search("inet addr:(\d+\.\d+\.\d+\.\d+)\s+Bcast",subprocess.Popen(shlex.split('/sbin/ifconfig'),stdout=subprocess.PIPE).stdout.read()).group(1)
+try:
+    ip['IF'] = re.search("inet addr:(\d+\.\d+\.\d+\.\d+)\s+Bcast",subprocess.Popen(shlex.split('/sbin/ifconfig'),stdout=subprocess.PIPE).stdout.read()).group(1)
+except:
+    ip['IF'] = '0.0.0.0'
 _,ipv6,asn6 = downloader('[2001:da8:243:8601::864]','/clientip.php','(.*)', 6)
 #print downloader('1111.ip138.com','/ic.asp','<center>.*\[(.*)\].*</center>')
 if hour == int(time.strftime("%H")):

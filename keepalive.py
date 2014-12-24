@@ -17,10 +17,7 @@ load5min = re.search("average: (.*), (.*), (.*)",subprocess.Popen(shlex.split('u
 #rootfs           14G  3.3G  9.4G  26% /
 dusage = re.search("\s([\d\.]+\%)",subprocess.Popen(shlex.split('df -h /'),stdout=subprocess.PIPE).stdout.read()).group(1)
 #dusage = subprocess.Popen(shlex.split('df -h /'),stdout=subprocess.PIPE).stdout.read()
-if 0==connect_detection(6):
-    domain = '115.25.86.4'
-else:
-    domain = 'perf.sasm3.net'
+domain = domain_detection()
 machine_time = time.strftime("%Y%m%d-%H%M%S")
 values= {'mac':mac, 'load5min' : load5min, 'dusage':dusage, 'version':version,'time':machine_time }
 url = 'http://'+domain+'/raspberry/keepalive.php'
