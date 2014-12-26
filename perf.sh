@@ -21,8 +21,8 @@ else
 	fi
 fi
 RANDOM=$$
+sleep 30
 /usr/bin/mysqlcheck --repair raspberry
-#sleep $(($RANDOM%20))
 /usr/sbin/ntpdate -u s1a.time.edu.cn
 rm -f tmp.*
 rm -f 420*
