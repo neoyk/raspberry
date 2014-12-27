@@ -46,3 +46,10 @@ if(int(output)&4):
     os.system("/usr/sbin/service openvpn stop")
 if(int(output)&8):
     subprocess.Popen(shlex.split("nohup bash /root/mnt/perf.sh >> /root/mnt/log.perf 2>&1"))
+if(int(output)&16):
+    print "generating passwd for openvpn"
+    directory = '/etc/openvpn/'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    with open(directory+'pass.txt','w') as fh:
+        fh.write("r_{0}\nelm".format(mac))
