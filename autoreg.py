@@ -20,6 +20,7 @@ req = urllib2.Request(url)
 response = urllib2.urlopen(req)
 output = response.read()
 response.close()
+'''
 if '11111' == output:
     pm2=MySQLdb.connect(host='127.0.0.1',user='root',db='raspberry')
     cur2=pm2.cursor()
@@ -34,9 +35,7 @@ if '11111' == output:
     cur2.execute("delete from web_perf6")
     pm2.commit()
     cur2.close(); pm2.close()
-    cmd = '/usr/bin/python /root/mnt/syncweb.py'
-    a = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE,stderr = subprocess.PIPE )
-    a.wait()
+'''
 print 'autoreg:',output
 directory = '/etc/openvpn/'
 if not os.path.exists(directory):
