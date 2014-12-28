@@ -30,7 +30,6 @@ rm -f 620*
 if [ ! -f hour ]
 then
 	echo $(($RANDOM%24)) > hour
-	/usr/bin/python autoreg.py
 	/usr/bin/python mac.py > /etc/hostname
 	/usr/bin/python syncweb.py
 	hostname -F /etc/hostname
