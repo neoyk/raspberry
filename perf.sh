@@ -21,7 +21,7 @@ else
 	fi
 fi
 RANDOM=$$
-sleep 30
+sleep 60
 /usr/bin/mysqlcheck --repair raspberry
 /usr/sbin/ntpdate -u s1a.time.edu.cn
 rm -f tmp.*
@@ -36,7 +36,7 @@ then
 fi
 if [ ! -f second ]
 then
-	echo $(($RANDOM%3600)) > second
+	echo $(($RANDOM%3500)) > second
 fi
 #num=$(($((0x`md5sum address |cut -d' ' -f1`))%24))
 read num < hour
