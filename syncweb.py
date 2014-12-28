@@ -3,7 +3,7 @@
 
 import sys, subprocess, shlex, MySQLdb, os, urllib, urllib2, logging, logging.handlers
 from collections import defaultdict
-from webcrawl import connect_detection
+from webcrawl import domain_detection
 dirname, filename = os.path.split(os.path.abspath(sys.argv[0]))
 pm1=MySQLdb.connect(host='localhost',user='root',db='raspberry')
 cur1=pm1.cursor()
