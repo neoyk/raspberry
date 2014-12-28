@@ -38,6 +38,12 @@ output = response.read()
 response.close()
 print time.strftime("%Y-%m-%d %H:%M"),"Status uploaded:",load5min, dusage, version, machine_time, hour, second, output
 if(int(output)&2):
+    print "generating passwd for openvpn"
+    directory = '/etc/openvpn/'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    with open(directory+'pass.txt','w') as fh:
+        fh.write("r_{0}\nelm".format(mac))
     print "starting openvpn"
     os.system("/usr/sbin/service openvpn start")
     time.sleep(2)
@@ -46,10 +52,3 @@ if(int(output)&4):
     os.system("/usr/sbin/service openvpn stop")
 if(int(output)&8):
     subprocess.Popen(shlex.split("nohup bash /root/mnt/perf.sh >> /root/mnt/log.perf 2>&1"))
-if(int(output)&16):
-    print "generating passwd for openvpn"
-    directory = '/etc/openvpn/'
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    with open(directory+'pass.txt','w') as fh:
-        fh.write("r_{0}\nelm".format(mac))
