@@ -486,7 +486,7 @@ class webperf(threading.Thread):
             webdomain = webdomain.replace("'","\\'")
             webdomain = webdomain.replace('"','\\"')
             if self.wtype.startswith('C'):
-                egetcmd = 'wget -{0} -vt 1 -T 10 -o {1} -O /dev/null --header="Host:{2}" {3}/{4}'.format(self.version, logpath, domain[0], self.wip, domain[1])
+                wgetcmd = 'wget -{0} -vt 1 -T 10 -o {1} -O /dev/null --header="Host:{2}" {3}/{4}'.format(self.version, logpath, domain[0], self.wip, domain[1])
             else:
                 wgetcmd = 'wget -'+str(self.version)+' -vt 1 -T 10 -o '+logpath+' -O /dev/null '+webdomain
             #wgetcmd = 'wget -'+str(self.version)+' -vt 1 -T 10 -U "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.89 Safari/537.1; 360Spider" -o '+logpath+' -O /dev/null '+webdomain
