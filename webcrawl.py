@@ -3,6 +3,7 @@
 import os,sys,threading,time,re,shlex,subprocess,urllib,urlparse, logging, logging.handlers, glob, signal, locale, math, uuid, urllib2
 import MySQLdb, maxminddb, IPy
 import dns.resolver #install dnspython first http://www.dnspython.org/
+from random import randint
 
 ISOTIMEFORMAT='%Y-%m-%d %X'
 dirname, _ = os.path.split(os.path.abspath(sys.argv[0]))
@@ -312,14 +313,14 @@ class webperf(threading.Thread):
             m = re.findall("Connecting to [^\|]+\|([^|]+).* connected.",log)
         if(m):
             ip = m[-1]
-            asn = ip2asn(ip,self.version)    
-            return (ip, asn)
+            #asn = ip2asn(ip,self.version)    
+            return ip
         else:
             if(self.version==6):
                 ip = '::'
             else:
                 ip = '0.0.0.0'
-            return (ip,'AS0')
+            return ip
     def tsharkparse(self,packets,latency,ip):
         #calculate instantaneous bw using tshark
         #fast_retransmission vs lost_segment: fast_retransmission may underestimate loss rate due to fail to indntify all duplicate acks, lost_segment may overestimate loss rate due to bursty losses during congestion
@@ -460,8 +461,9 @@ class webperf(threading.Thread):
             self.logger.info("Start: %s"%(result,) )
             try:
                 webdomain = str(result[0])
-                self.wtype = str(result[4])
+                asn = str(result[1])
                 self.wip = str(result[2])
+                self.wtype = str(result[4])
             except:
                 self.logger.warning( "Wrong webdomain: "+str(webid))
                 continue
@@ -546,7 +548,7 @@ class webperf(threading.Thread):
                 #except:
                 #    pass
                 self.logger.info( "HTTP redirection found. Real webdomain: "+webdomain)
-            ip, asn = self.wgetip(log)
+            ip = self.wgetip(log)
             #if self.wtype.startswith('C') and ip!='0.0.0.0' and ip != self.wip:
             if self.wtype.startswith('C') and ip != self.wip:
                 self.logger.warning( "Multihoming measurement failed: IP address mismatch {0} {1}".format(ip, self.wip))
@@ -556,6 +558,7 @@ class webperf(threading.Thread):
                 self.logger.warning(errmsg)
             if(ip!='127.0.0.1' and ip!='::' and result[2]!=ip and 0==self.wtype.startswith('C') ):
             #def ipchange(self,cur,webid,ip,asn):
+                asn = ip2asn(ip, self.version)
                 self.ipchange(webid,ip,asn)
             m = re.search("\((.*B\/s)\).*dev\/null.*saved \[(.*)\]",log)
             if(m):
