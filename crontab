@@ -12,3 +12,4 @@
 0 * * * * sleep `cat /root/mnt/second` && /bin/bash /root/mnt/perf.sh >> /root/mnt/log.perf 2>&1
 */5 * * * * /usr/bin/python /root/mnt/keepalive.py >> /root/mnt/log.keepalive 2>&1
 @reboot rm -f /root/mnt/hour && rm -f /root/mnt/run && /bin/bash /root/mnt/perf.sh >> /root/mnt/log.perf 2>&1
+@reboot /usr/sbin/ntpdate -u s1a.time.edu.cn
