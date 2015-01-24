@@ -22,7 +22,7 @@ else
 fi
 RANDOM=$$
 sleep 60
-/usr/bin/mysqlcheck --repair raspberry
+/usr/bin/mysqlcheck --repair raspberry > /dev/null
 /usr/sbin/ntpdate -u s1a.time.edu.cn
 rm -f tmp.*
 rm -f 420*

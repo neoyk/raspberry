@@ -100,7 +100,7 @@ elif hour== int(time.strftime("%H")) and ( entry[1]!=ip4str or entry[2]!=ipv6 ):
     needupload = 1
 else:
     m = re.search("CE:(\d+\.\d+\.\d+\.\d+)",entry[1])
-    if m and m.group(1)!=ip['CE']:
+    if m is None or (m and m.group(1)!=ip['CE']):
         needupload = 1
         #ip4str = entry[1].replace(m.group(1), ip['CE'], 1)
         #asn4str = entry[3].replace(re.search("CE:(.*)\+CM",entry[3]).group(1),asn['CE'], 1)
