@@ -161,7 +161,20 @@ def downloader(domain,directory,pattern, version = 4):
 def mac_addr():
     mac_int = uuid.getnode()
     if (mac_int>>40)%2:
-        mac = '0'*12
+        cmd = '/sbin/mii-tool'
+        p1 = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        p1.wait()
+        log = p1.stdout.read()
+        nolink = log.count('no link')
+        cmd = '/sbin/ifconfig'
+        p1 = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        p1.wait()
+        log = p1.stdout.read()
+        m = re.findall('HWaddr\s([\da-f\:]+)\s',log, re.IGNORECASE)
+        if len(m)>nolink:
+            mac = m[nolink].lower().replace(':','')
+        else:
+            mac = '0'*12
     else:
         mac = '{0:012x}'.format(mac_int)
     return mac
