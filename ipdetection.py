@@ -67,7 +67,7 @@ _,ipv6,asn6 = downloader('[2001:da8:243:8601::864]','/clientip.php','(.*)', 6)
 #print downloader('1111.ip138.com','/ic.asp','<center>.*\[(.*)\].*</center>')
 if hour == int(time.strftime("%H")):
     _,ip['I1'],asn['I1'] = downloader('checkmyip.com','/','Your.*IP.*is:.*>(\d+\.\d+\.\d+\.\d+)</span')
-    _,ip['I2'],asn['I2'] = downloader('whatismyipaddress.com','/ip-lookup','name="LOOKUPADDRESS" value="(\d+\.\d+\.\d+\.\d+)"\ssize="')
+    _,ip['I2'],asn['I2'] = downloader('bot.whatismyipaddress.com','','(.*)')
     try:
         for key in weblist_138.keys():
             ip[key] = ip138(weblist_138[key], headers_138)
