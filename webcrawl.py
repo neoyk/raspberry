@@ -64,6 +64,14 @@ def connect_detection(version=4):
             return True
     return False
 
+def ivi_detection():       
+    domainlist=['search.sasm3.net', 'www.baidu.com'] # detection criterion: ipv4 only domain have ipv6 address
+    for domain in domainlist:
+        con, _, _, _ = rttmeasure(domain,6)
+        if con:
+            return True
+    return False
+
 def domain_detection():
     if connect_detection(6):
         return 'perf.sasm3.net'
@@ -259,10 +267,11 @@ def sizelimit(bw, rtt):
     return Tss+Tcubic
 
 class webperf(threading.Thread):
-    def __init__(self,idlist, version, name, verbose = logging.INFO ):
+    def __init__(self,idlist, version, name, verbose = logging.INFO, ivi = 0 ):
         threading.Thread.__init__(self)
         self.mac = mac_addr()
         self.idlist = idlist
+        self.ivi = ivi
         if(version!=4 and version !=6):
             version = 4
         self.version = version
@@ -320,7 +329,7 @@ class webperf(threading.Thread):
             self.cur1.execute("update ipv"+str(self.version)+"server set asn=%s,ip=%s, location='N/A',longitude=0,latitude=0, aspath=%s where id = %s",( asn, ip, path, webid ))
 
     def wgetip(self,log):
-        if self.wtype.startswith('C'):
+        if self.wtype.startswith('C') and self.ivi==0:
             m = re.findall("Connecting to (\d+\.\d+\.\d+\.\d+).* connected.",log)
         else:
             m = re.findall("Connecting to [^\|]+\|([^|]+).* connected.",log)
@@ -338,7 +347,7 @@ class webperf(threading.Thread):
         #calculate instantaneous bw using tshark
         #fast_retransmission vs lost_segment: fast_retransmission may underestimate loss rate due to fail to indntify all duplicate acks, lost_segment may overestimate loss rate due to bursty losses during congestion
         tsharkfile = packets+'tshark'
-        if(self.version==6):
+        if(self.version==6 or self.ivi):
             tshark = "/usr/sbin/tshark -q -r "+packets+' -z io,stat,100,"ipv6.src=='+ip+'","tcp.analysis.retransmission" '
         else:
             tshark = "/usr/sbin/tshark -q -r "+packets+' -z io,stat,100,"ip.src == '+ip+'","tcp.analysis.retransmission" '
@@ -435,6 +444,8 @@ class webperf(threading.Thread):
     def perfsuccess(self, webid, webdomain, ip, asn, pagesize, oldpagesize, bandwidth, maxbw, latency, lossrate, actual_loss, serverslow):
         peak = bwftop(maxbw)
         avgbw = bwftop(bandwidth)
+        if self.ivi:
+            ip = '0.0.0.0' # column web_perf4.ip varchar(16) is not long enough to save an ipv6 address
         perf = "Page size: "+locale.format("%d",pagesize, grouping=True)+"B, BTC: "+avgbw+'(peak:'+peak+"), RTT: "+str(latency)+"ms, lossrate: "+str(round(lossrate,2))+" % @ "+time.strftime("%Y-%m-%d %H:%M:%S")
         self.cur1.execute("update ipv"+str(self.version)+"server set performance=%s, bandwidth=%s where id = %s",(perf, maxbw, webid))
         if(pagesize>1.5*oldpagesize or pagesize*1.5<oldpagesize):
@@ -480,16 +491,16 @@ class webperf(threading.Thread):
             except:
                 self.logger.warning( "Wrong webdomain: "+str(webid))
                 continue
-            if result[5] is None and self.wtype.startswith('C'):
+            if result[5] is None and self.wtype.startswith('C') and self.ivi==0:
                 asn = ip2asn(self.wip, self.version)
                 self.ipchange(webid,self.wip,asn)
             #cmd='wget -vt 1 -T 10 -o $name/log.txt -O /home/yk/mnt/wget.html '+webdomain
             try:
                 domain = webdomain.split('/',1)
-                if self.wtype.startswith('C'):
+                if self.wtype.startswith('C') and self.ivi==0:
                     snippet = result[2]
                 else:
-                    if(self.version==6):
+                    if(self.version==6 or self.ivi):
                         answers = dns.resolver.query(domain[0], 'AAAA')
                     else:
                         answers = dns.resolver.query(domain[0], 'A')
@@ -500,7 +511,9 @@ class webperf(threading.Thread):
                 continue
             webdomain = webdomain.replace("'","\\'")
             webdomain = webdomain.replace('"','\\"')
-            if self.wtype.startswith('C'):
+            if self.ivi:
+                wgetcmd = 'wget -6 -vt 1 -T 10 -o '+logpath+' -O /dev/null '+webdomain
+            elif self.wtype.startswith('C'):
                 wgetcmd = 'wget -{0} -vt 1 -T 10 -o {1} -O /dev/null --header="Host:{2}" {3}/{4}'.format(self.version, logpath, domain[0], self.wip, domain[1])
             else:
                 wgetcmd = 'wget -'+str(self.version)+' -vt 1 -T 10 -o '+logpath+' -O /dev/null '+webdomain
@@ -563,13 +576,16 @@ class webperf(threading.Thread):
                 self.logger.info( "HTTP redirection found. Real webdomain: "+webdomain)
             ip = self.wgetip(log)
             #if self.wtype.startswith('C') and ip!='0.0.0.0' and ip != self.wip:
-            if self.wtype.startswith('C') and ip != self.wip:
+            if self.ivi==0 and self.wtype.startswith('C') and ip != self.wip:
                 self.logger.warning( "Multihoming measurement failed: IP address mismatch {0} {1}".format(ip, self.wip))
-            _,_,latency, errmsg = rttmeasure(ip, self.version)
+            if self.ivi:
+                _,_,latency, errmsg = rttmeasure(ip, 6)
+            else:
+                _,_,latency, errmsg = rttmeasure(ip, self.version)
             if(errmsg != ''):
                 self.logger.warning("RTT measure alert:")
                 self.logger.warning(errmsg)
-            if(ip!='127.0.0.1' and ip!='::' and result[2]!=ip and 0==self.wtype.startswith('C') ):
+            if(self.ivi==0 and ip!='127.0.0.1' and ip!='::' and result[2]!=ip and 0==self.wtype.startswith('C') ):
             #def ipchange(self,cur,webid,ip,asn):
                 asn = ip2asn(ip, self.version)
                 self.ipchange(webid,ip,asn)
@@ -620,6 +636,8 @@ class webperf(threading.Thread):
                 lossrate = -1
                 maxbw = 0
                 self.logger.info( "Finish 4xx error: %s"%( (webid, ip, asn, webdomain, bandwidth, pagesize, latency, lossrate, success),) )
+                if self.ivi:
+                    ip = '0.0.0.0'
                 self.cur1.execute("insert into web_perf"+str(self.version)+" values(%s, %s, %s, %s, %s, now(), %s, %s, %s, %s, %s, %s, %s)",(self.mac, webid, ip, asn, webdomain, bandwidth,pagesize, latency, lossrate, lossrate, maxbw, self.wtype))
                 self.cur1.execute("update ipv"+str(self.version)+"server set crawl=crawl-1 where id = %s",( webid, ))
             else:

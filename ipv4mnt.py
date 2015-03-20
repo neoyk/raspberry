@@ -8,9 +8,15 @@ from collections import defaultdict
 from random import shuffle
 
 version = 4
+ivi = 0
 if 0==connect_detection(version):
-    print "No IPv{0} connection detected, quitting.".format(version)
-    exit()
+    print "No IPv{0} connection detected.".format(version)
+    if ivi_detection():
+        print "IVI translation detected, performing domain only measurements."
+        ivi = 1
+    else:
+        print "No translation mechanism detected, quiting."
+        exit()
 
 verbose = logging.INFO
 dirname, filename = os.path.split(os.path.abspath(sys.argv[0]))
@@ -29,10 +35,13 @@ stime = time.time()
 pm2=MySQLdb.connect(host='127.0.0.1',user='root',db='raspberry')
 cur2=pm2.cursor()
 
-cur2.execute("select id from ipv"+str(version)+"server ")
+if ivi:
+    cur2.execute("select id from ipv"+str(version)+"server where length(type)>2") # excluding CU CM CT
+else:
+    cur2.execute("select id from ipv"+str(version)+"server ")
 idlist1 = [ i[0] for i in cur2.fetchall()]
 shuffle(idlist1)
-fast = webperf(idlist1, version, nameprefix+'MB', verbose)
+fast = webperf(idlist1, version, nameprefix+'MB', verbose, ivi)
 fast.start()
 fast.join()
 
